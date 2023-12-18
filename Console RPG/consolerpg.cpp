@@ -14,6 +14,9 @@ using namespace std;
 #define MAPWIDTH 50
 #define MAPHEIGHT 20
 
+// Global Variables
+char map[MAPHEIGHT][MAPWIDTH];
+
 // Function to hide the cursor
 void HideCursor() {
 	CONSOLE_CURSOR_INFO cursorInfo;
@@ -28,58 +31,78 @@ void PrintColored(char& character) {
 
 	switch (character) {
 		case '0':
-			SetConsoleTextAttribute(hConsole, 9);
-			cout << character;
-			SetConsoleTextAttribute(hConsole, 7);
-
+			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE);
+			
 			break;
 		case 'K':
-			SetConsoleTextAttribute(hConsole, 6);
-			cout << character;
-			SetConsoleTextAttribute(hConsole, 7);
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
 
 			break;
-		default:
-			cout << character;
+		case 'M':
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED);
+
+			break;
+		case 'G':
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN);
 
 			break;
 	}
+
+	cout << character;
+	SetConsoleTextAttribute(hConsole, 7);
 }
 
 // Function to clear the top lines of the console
-void ClearTopLines(int linesToClear) {
-    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-    CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-    GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
+void ClearLines(int startLine, int endLine) {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
+	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);
 
-    COORD topLeft = {0, 0};
-    DWORD length = consoleInfo.dwSize.X * linesToClear;
-    DWORD written;
+	COORD topLeft = {0, startLine};
+	DWORD length = consoleInfo.dwSize.X * (endLine - startLine + 1);
+	DWORD written;
 
-    FillConsoleOutputCharacter(hConsole, ' ', length, topLeft, &written);
-    FillConsoleOutputAttribute(hConsole, consoleInfo.wAttributes, length, topLeft, &written);
-    SetConsoleCursorPosition(hConsole, topLeft);
+	FillConsoleOutputCharacter(hConsole, ' ', length, topLeft, &written);
+	FillConsoleOutputAttribute(hConsole, consoleInfo.wAttributes, length, topLeft, &written);
+	SetConsoleCursorPosition(hConsole, topLeft);
+}
+
+// Function to clear the action line and print the new action
+void PrintActionResult(string action) {
+	ClearLines(MAPHEIGHT + 1, MAPHEIGHT + 1);
+	cout << action << endl;
 }
 
 // Interaction handling
-void Interact(char& character, int& x, int& y) {
-	switch (character) {
+void Interact(char& item, int& x, int& y) {
+	switch (item) {
 		case '#':
-			cout << "You cannot interact with the wall!                              " << endl;
+			PrintActionResult("You cannot interact with the wall!");
 
 			break;
 		case 'K':
-			cout << "You pick up the key.                              " << endl;
+			PrintActionResult("You pick up the key.");
+			map[x][y] = ' ';
+
+			break;
+		case 'M':
+			PrintActionResult("You attack and kill the monster. It drops a gold coin.");
+			map[x][y] = 'G';
+
+			break;
+		case 'G':
+			PrintActionResult("You pick up the gold coin.");
+			map[x][y] = ' ';
 
 			break;
 		default:
-			cout << "There is nothing in that direction!                              " << endl;
+			PrintActionResult("There is nothing in that direction!");
 
 			break;
 	}
 }
 
-void DrawMap(char map[MAPHEIGHT][MAPWIDTH]) {
+void DrawMap() {
 	for (int i = 0; i < MAPHEIGHT; ++i) {
 		for (int j = 0; j < MAPWIDTH; ++j) {
 			PrintColored(map[i][j]);
@@ -101,9 +124,6 @@ int main() {
 	srand(time(0)); // Set the random seed
 	HideCursor(); // Hide the cursor
 
-	// Create the map
-	char map[MAPHEIGHT][MAPWIDTH];
-
 	for (int i = 0; i < MAPHEIGHT; i++) {
 		for (int j = 0; j < MAPWIDTH ; j++) {
 			if (i == 0 || i == MAPHEIGHT - 1 || j == 0 || j == MAPWIDTH - 1) {
@@ -114,19 +134,20 @@ int main() {
 		}
 	}
 
-	map[1 + rand() % (MAPHEIGHT - 2)][1 + rand() % (MAPWIDTH - 2)] = 'K'; // Place a key randomly on the map, not on the edge
+	map[1 + rand() % (MAPHEIGHT - 2)][1 + rand() % (MAPWIDTH - 2)] = 'K'; // Place a key randomly on the map
+	map[1 + rand() % (MAPHEIGHT - 2)][1 + rand() % (MAPWIDTH - 2)] = 'M'; // Place 2 monsters randomly on the map
+	map[1 + rand() % (MAPHEIGHT - 2)][1 + rand() % (MAPWIDTH - 2)] = 'M';
 
 	// Set the player in the middle of the map
 	map[MAPHEIGHT / 2][MAPWIDTH / 2] = '0';
 
 	// Draw the map for the first time
-	DrawMap(map);
+	DrawMap();
 
 	char control;
 	int x, y;
 	x = MAPHEIGHT / 2;
 	y = MAPWIDTH / 2;
-
 
 	// Control handling
 	do {
@@ -135,6 +156,8 @@ int main() {
 		if (control == 0 || control == 224) { // Arrow key codes
 			control = getch(); // Read the second code
 		}
+		
+		int newX, newY;
 
 		switch (control) {
 			case 'w': // Move up
@@ -170,19 +193,23 @@ int main() {
 
 				break;
 			case KEY_UP: // Interact up
-				Interact(map[x - 1][y], x, y);
+				newX = x - 1;
+				Interact(map[newX][y], newX, y);
 
 				break;
 			case KEY_DOWN: // Interact down
-				Interact(map[x + 1][y], x, y);
+				newX = x + 1;
+				Interact(map[newX][y], newX, y);
 
 				break;
 			case KEY_LEFT: // Interact left
-				Interact(map[x][y - 1], x, y);
+				newY = y - 1;
+				Interact(map[x][newY], x, newY);
 
 				break;
 			case KEY_RIGHT: // Interact right
-				Interact(map[x][y + 1], x, y);
+				newY = y + 1;
+				Interact(map[x][newY], x, newY);
 
 				break;
 			default:
@@ -190,8 +217,8 @@ int main() {
 		}
 
 		// Re-draw the map after each control
-		ClearTopLines(MAPHEIGHT);
-		DrawMap(map);
+		ClearLines(0, MAPHEIGHT);
+		DrawMap();
 
 		cout << endl;
 	} while (control != 'x');
