@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" type = "text/css" href="css/main-style.css">
+		<title>Terra Solutions</title>
+	</head>
+
+	<body onscroll="updateHeaderColor()">
+		<div id="headerbackground"></div>
+
+		<div id="header">
+			<div id="nav">
+				<a href="main.html" id="logo"><img src="images/logo.png"></a>
+
+				<ul>
+					<li><a href="#main">ABOUT</a></li>
+					<li><a href="news.html">NEWS</a></li>
+					<li><a href="gallery.html">GALLERY</a></li>
+					<li><a href="contact.html">CONTACT</a></li>
+				</ul>
+			</div>
+
+			<br><br><br><br><br><br><br><br><br><br>
+			<h1>Leaders in sustainable energy.</h1>
+		</div>
+
+		<div id="main">
+			<div id="content">
+				<h2>About Us</h2>
+
+				<img id="img1" src="https://www.electricradiatorsdirect.ie/media/wysiwyg/greenenergy.png">
+
+				<p>At our core, we are a pioneering company committed to revolutionizing the energy landscape through specialized expertise in delivering sustainable and environmentally conscious energy solutions. Rooted in the belief that access to clean and affordable energy is a fundamental right, we tirelessly strive to create a positive impact on the world by making sustainable energy accessible to everyone.</p>
+
+				<p>Our mission extends far beyond mere business objectives; it is a commitment to fostering a greener, more sustainable future for generations to come. Recognizing the urgent need for eco-friendly alternatives, we have positioned ourselves as leaders in the field of sustainable energy, leveraging cutting-edge technologies and innovative approaches to address the global energy challenges we face.</p>
+
+				<p>In pursuit of our goal to provide sustainable energy for everyone, we have developed a diverse portfolio of solutions that cater to various needs and contexts. From solar and wind power systems to advanced energy storage solutions, our range of offerings is designed to meet the unique requirements of individuals, businesses, and communities alike. We understand that one size does not fit all, and as such, our customizable solutions are tailored to optimize efficiency and affordability while minimizing environmental impact.</p>
+
+				<img id="img2" src="https://www.birdlife.org/wp-content/uploads/2021/11/nicholas-doherty-pONBhDyOFoM-unsplash-scaled.jpg">
+
+				<p>Embracing a holistic approach, we prioritize not only the end result of clean energy but also the entire lifecycle of our solutions. This means meticulous attention to the sourcing of materials, manufacturing processes, and the responsible disposal of components, ensuring a cradle-to-grave commitment to sustainability. In doing so, we are not only providing access to clean energy but also contributing to the reduction of carbon footprints and the overall betterment of the planet.</p>
+
+				<p>Collaboration is at the heart of our strategy. By partnering with like-minded organizations, governments, and local communities, we aim to create synergies that amplify the positive impact of our efforts. We believe in fostering a collective responsibility towards sustainable energy, and through strategic alliances, we aspire to create a global network working towards a common goal – a world powered by clean and renewable energy sources.</p>
+			</div>
+
+			<div id="sidebar">
+				<h2>Our Mission</h2>
+				<p>Our mission is deeply rooted in the conviction that everyone deserves access to clean and affordable energy. It is our commitment to provide sustainable energy for all, driving us to develop innovative and scalable solutions that transcend geographical and socioeconomic boundaries. We believe in democratizing access to clean energy, breaking down barriers, and fostering a sustainable future that is inclusive and equitable.</p>
+
+				<h2>Our Vision</h2>
+				Envisioning a future where sustainability takes center stage, our overarching vision is to stand as the leader in providing cutting-edge sustainable energy solutions. Our unwavering commitment extends to offering unparalleled service, dedicated to assisting you in discovering the ideal sustainable energy solution tailored to the specific needs of your home or business. By prioritizing excellence and customer satisfaction, we aim to set the standard for the industry, ensuring that your journey towards sustainable energy is seamless and optimized for long-term success.
+
+				<h2>Our Values</h2>
+				<p>Guided by our core values of sustainability, innovation, and customer service, we are dedicated to providing unparalleled service. Our commitment extends to assisting you in discovering the ideal sustainable energy solution for your home or business, reflecting our values in every step of the journey.</p>
+			</div>
+		</div>
+
+		<div id="footer">
+			<p>Copyright &copy; 2024 Terra Solutions. All rights reserved.</p>
+		</div>
+
+		<script>
+			function updateHeaderColor() {
+				const scrollPosition = window.scrollY;
+				const opacity = Math.min(scrollPosition / 500, 1);
+				document.getElementById('nav').style.backgroundColor = `rgba(6, 32, 26, ${opacity})`;
+
+				// debug print
+				console.log(`scrollPosition: ${scrollPosition}, opacity: ${opacity}`);
+			}
+		</script>
+	</body>
+</html>

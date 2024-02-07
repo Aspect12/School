@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<link rel="stylesheet" type = "text/css" href="css/gallery-style.css">
+		<title>Terra Solutions</title>
+	</head>
+
+	<body>
+		<div id="headerbackground"></div>
+
+		<div id="header">
+			<div id="nav">
+				<a href="main.html" id="logo"><img src="images/logo.png"></a>
+
+				<ul>
+					<li><a href="main.html">ABOUT</a></li>
+					<li><a href="news.html">NEWS</a></li>
+					<li><a href="gallery.html">GALLERY</a></li>
+					<li><a href="contact.html">CONTACT</a></li>
+				</ul>
+			</div>
+		</div>
+
+		<div id="main">
+			<div id="content">
+				<div id="grid-container">
+					<div id="grid-item"><img src="https://www.projectsolaruk.com/wp-content/uploads/2022/02/american-public-power-association-fm5_vCUa-Bc-unsplash.jpg" onclick="openLightbox('https:/\/www.projectsolaruk.com/wp-content/uploads/2022/02/american-public-power-association-fm5_vCUa-Bc-unsplash.jpg')"></div>
+					<div id="grid-item"><img src="https://www.birdlife.org/wp-content/uploads/2021/11/nicholas-doherty-pONBhDyOFoM-unsplash-scaled.jpg" onclick="openLightbox('https:/\/www.birdlife.org/wp-content/uploads/2021/11/nicholas-doherty-pONBhDyOFoM-unsplash-scaled.jpg')"></div>
+					<div id="grid-item"><img src="https://d12oja0ew7x0i8.cloudfront.net/images/Article_Images/ImageForArticle_21371_16457084545525256.jpg" onclick="openLightbox('https:/\/d12oja0ew7x0i8.cloudfront.net/images/Article_Images/ImageForArticle_21371_16457084545525256.jpg')"></div>
+					<div id="grid-item"><img src="https://www.adexcop.com/wp-content/uploads/2023/12/solar-with-storage.jpg" onclick="openLightbox('https:/\/www.adexcop.com/wp-content/uploads/2023/12/solar-with-storage.jpg')"></div>
+					<div id="grid-item"><img src="https://www.electricradiatorsdirect.ie/media/wysiwyg/greenenergy.png" onclick="openLightbox('https:/\/www.electricradiatorsdirect.ie/media/wysiwyg/greenenergy.png')"></div>
+					<div id="grid-item"><img src="https://bluegift.eu/wp-content/uploads/2019/12/Arrecife-Energy-Systems.jpg" onclick="openLightbox('https:/\/bluegift.eu/wp-content/uploads/2019/12/Arrecife-Energy-Systems.jpg')"></div>
+					<div id="grid-item"><img src="https://lumasolar.com/wp-content/uploads/2021/08/DSC05747-scaled.jpg" onclick="openLightbox('https:/\/lumasolar.com/wp-content/uploads/2021/08/DSC05747-scaled.jpg')"></div>
+					<div id="grid-item"><img src="https://media.istockphoto.com/id/1340413200/photo/aerial-view-of-a-high-voltage-substation.jpg?s=612x612&w=0&k=20&c=Nat7fUcivRPMID1-CowPHC7o-D_2R3E-8Tb2K9qf_14=" onclick="openLightbox('https:/\/media.istockphoto.com/id/1340413200/photo/aerial-view-of-a-high-voltage-substation.jpg?s=612x612&w=0&k=20&c=Nat7fUcivRPMID1-CowPHC7o-D_2R3E-8Tb2K9qf_14=')"></div>
+					<div id="grid-item"><img src="https://www.mountainenergy.com.np/assets/images/org/10b.jpg" onclick="openLightbox('https:/\/www.mountainenergy.com.np/assets/images/org/10b.jpg')"></div>
+				  </div>
+			</div>
+		</div>
+
+		<div id="footer">
+			<p>Copyright &copy; 2024 Terra Solutions. All rights reserved.</p>
+		</div>
+
+		<div class="lightbox" onclick="closeLightbox()">
+			<span class="close-btn">&times;</span>
+			<img id="lightbox-img" src="" alt="Lightbox Image">
+		</div>
+
+		<script>
+			function openLightbox(imageSrc) {
+				document.getElementById('lightbox-img').src = imageSrc;
+				document.querySelector('.lightbox').style.display = 'flex';
+
+				document.body.style.overflow = 'hidden';
+			}
+
+			function closeLightbox() {
+				document.querySelector('.lightbox').style.display = 'none';
+
+				document.body.style.overflow = 'auto';
+			}
+		</script>
+	</body>
+</html>
