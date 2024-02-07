@@ -1,0 +1,29 @@
+SELECT * FROM movies
+WHERE avg_rating >= 9;
+	- Δείχνει ταινίες με μέση βαθμολογία μεγαλύτερη από ή ίση με 9.
+
+SELECT * FROM movies
+JOIN movies_categories ON Movies.id = movies_categories.movie_id
+JOIN categories ON categories.id = movies_categories.category_id
+WHERE categories.name = 'Sci-Fi';
+	- Δείχνει ταινίες κατηγορίας 'Sci-Fi'.
+
+SELECT * FROM movies
+WHERE duration >= 150;
+	- Δείχνει ταινίες διάρκειας μεγαλύτερη από ή ίση με 150.
+
+SELECT * FROM movies
+WHERE release_date BETWEEN '2022-03-01' AND '2022-06-01'
+	- Δείχνει ταινίες που βγήκαν μεταξύ 2022-03-01 και 2022-06-01.
+
+SELECT movies.* FROM movies
+JOIN actors_movies ON movies.id = actors_movies.movie_id
+JOIN actors ON actors.id = actors_movies.actor_id
+WHERE actors.name = 'Leonardo DiCaprio';
+	- Δείχνει ταινίες που πρωταγωνιστούν τον 'Leonardo DiCaprio'.
+
+SELECT actors.* FROM actors
+JOIN actors_movies ON actors.id = actors_movies.actor_id
+JOIN movies ON movies.id = actors_movies.movie_id
+WHERE movies.title = 'Inception';
+	- Δείχνει όλους τους ηθοποιούς που πρωταγωνιστούν στην ταινία 'Inception'.
