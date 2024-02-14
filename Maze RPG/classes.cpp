@@ -41,6 +41,7 @@ void Player::AddItem(Item item) {
 	if (item.type == ITEM_WEAPON) {
 		Weapon* weapon = (Weapon*)&item;
 
+		cout << weapon->damage << endl;
 		if (weapon->damage > currAttack) {
 			cout << weapon->damage << endl;
 			cout << weapon->uniqueID << endl;

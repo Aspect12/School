@@ -9,11 +9,13 @@ using namespace std;
 
 extern vector<Item*> items;
 
+int itemIterator = 1;
+
 Item::Item(string name) {
 	x = 0;
 	y = 0;
 	itemName = name;
-	uniqueID = rand() % 1000000;
+	uniqueID = itemIterator++;
 
 	items.push_back(this);
 }
