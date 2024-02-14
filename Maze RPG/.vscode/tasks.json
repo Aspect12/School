@@ -1,0 +1,48 @@
+
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "C/C++: Compile Maze RPG",
+			"command": "C:/TDM-GCC-64/bin/g++.exe",
+			"args": [
+				"-Wall",
+				"-Wextra",
+				"-g3",
+				"-g",
+				"${workspaceRoot}/mazerpg.cpp",
+				"${workspaceRoot}/classes.cpp",
+				"${workspaceRoot}/items.cpp",
+				"${workspaceRoot}/functions.cpp",
+				"-o",
+				"${workspaceRoot}/output/mazerpg.exe"
+			],
+			"problemMatcher": [
+				"$gcc"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "C/C++: Run Maze RPG",
+			"command": "${workspaceRoot}/output/mazerpg.exe",
+			"problemMatcher": [],
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			},
+			"presentation": {
+				"reveal": "always",
+				"panel": "shared"
+			}
+		}
+	]
+}
