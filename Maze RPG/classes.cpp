@@ -1,6 +1,8 @@
 
 #include <iostream>
 #include <vector>
+#include <windows.h>
+#include <conio.h>
 
 #include "functions.h"
 #include "classes.h"
@@ -9,6 +11,9 @@
 using namespace std;
 
 vector<Item*> items;
+vector<Enemy*> enemies;
+
+int enemyIDIterator = 1;
 
 // A 'MapChange' class to store the changes to the map so I don't redraw the entire thing every time
 MapChange::MapChange(int x, int y)	{
@@ -24,6 +29,11 @@ Player::Player(int newX, int newY, string name, int health, int maxHP, int armor
 	currHealth = health;
 	maxHealth = maxHP;
 	currArmor = armor;
+
+	maxItems = 7;
+	inCombat = -1;
+//	activeWeaponID = -1;
+	activeArmorID = -1;
 
 	// Give the player a starting weapon
 	Weapon* dagger = new Weapon("Dagger", 4, false);
@@ -62,7 +72,7 @@ void Player::RemoveItem(int uniqueID, bool noDestroy) {
 
 		inventory[i]->OnRemoved(this);
 
-		if (!noDestroy) delete inventory[i];
+		// if (!noDestroy) delete inventory[i];
 
 		inventory.erase(inventory.begin() + i);
 
@@ -71,40 +81,114 @@ void Player::RemoveItem(int uniqueID, bool noDestroy) {
 }
 
 void Player::Interact(char& object, int& x, int& y) {
-	string potionName;
-	int healthAmount;
-
 	switch (object) {
 		case '#': // Wall
-			PrintActionResult("You push the wall. Nothing happens.");
+			AppendActionResult(currName + " push the wall. Nothing happens.");
 
 			break;
 		case 'M': // Monster
-			// Drop a random health potion from the items list once the monster is killed
-			switch (rand() % 4) {
-				case 0:
-					potionName = "Small Health Potion";
-					healthAmount = 10;
+		case 'B': // Boss
+			if (activeWeaponID == -1) {
+				AppendActionResult(currName + " don't have a weapon to attack with!");
 
-					break;
-				case 1:
-					potionName = "Medium Health Potion";
-					healthAmount = 20;
-
-					break;
-				case 2:
-					potionName = "Large Health Potion";
-					healthAmount = 30;
-
-					break;
-				case 3:
-					potionName = "Super Health Potion";
-					healthAmount = 40;
-
-					break;
+				break;
 			}
 
-			PrintActionResult("You attack and kill the monster. It drops a " + potionName + ".");
+			for (int i = 0; i < enemies.size(); ++i) {
+				if (enemies[i]->x != x || enemies[i]->y != y) continue;
+
+				Enemy* enemy = enemies[i];
+
+				if (inCombat == -1 && inCombat != enemy->uniqueID) {
+					AppendActionResult(currName + " engaged in combat with the " + enemy->name + "! ");
+					inCombat = enemy->uniqueID;
+
+					Sleep(1000);
+
+					// Roll a d20 for initiative
+					int playerInitiative = rand() % 20 + 1;
+					int enemyInitiative = rand() % 20 + 1;
+
+					if (playerInitiative > enemyInitiative || playerInitiative == enemyInitiative) {
+						AppendActionResult(currName + " gains initiative!");
+					} else {
+						AppendActionResult("The " + enemy->name + " gains initiative and strikes first!");
+
+						Sleep(1000);
+
+						enemy->Attack(this);
+					}
+
+					break;
+				}
+
+				string result = currName + " attacks the " + enemy->name + " for " + to_string(currAttack) + " damage, ";
+
+				enemy->health -= currAttack;
+
+				if (enemy->health <= 0) {
+					if (((Boss*)enemy)->maxHealth == 35 && !((Boss*)enemy)->enraged) {
+						result += "slaying it! ";
+
+						AppendActionResult(result);
+
+						DrawBoss(this, ' ', x, y);
+						DrawMap();
+
+						Sleep(2000);
+
+						AppendActionResult(currName + " have defeated the " + enemy->name + "! You win! Press any key to exit...");
+
+						getch();
+						exit(0);
+					} else {
+						result += "slaying it! It drops a " + enemy->healthPotName + ".";
+						enemies.erase(enemies.begin() + i);
+
+						Item* potion = new Potion(x, y, enemy->healthPotName, enemy->healthPotValue);
+						items.push_back(potion);
+
+						inCombat = -1;
+
+						AppendActionResult(result);
+					}
+				} else {
+					result += "leaving it with " + to_string(enemy->health) + " health!";
+
+					AppendActionResult(result);
+
+					Sleep(1000);
+
+					// If the enemy's health is at 50% or less, turn it into a Boss
+					if (enemy->health <= enemy->maxHealth * 0.5 && ((Boss*)enemy)->maxHealth == 35 && !((Boss*)enemy)->enraged) {
+						AppendActionResult("The " + enemy->name + " becomes enraged!");
+
+						Boss* boss = (Boss*)enemy;
+
+						boss->name = "Enraged " + boss->name;
+						boss->enraged = true;
+						boss->health = 60;
+						boss->armor = 5;
+						boss->attack = 12;
+
+						RegisterMapChange('B', x, y);
+
+						// Make the boss larger
+						DrawBoss(this, 'B', x, y);
+						DrawMap();
+
+						Sleep(2000);
+					}
+
+					if (((Boss*)enemy)->enraged) {
+						((Boss*)enemy)->BossAttack(this);
+					} else {
+						enemy->Attack(this);
+					}
+				}
+
+				break;
+			}
 
 			break;
 		case 'C': // Chest
@@ -113,15 +197,24 @@ void Player::Interact(char& object, int& x, int& y) {
 
 				Chest* chest = chests[i];
 
-				PrintActionResult("You open the chest and find: " + chest->GetListOfItems());
+				AppendActionResult(currName + " open the chest and find: " + chest->GetListOfItems());
 
 				// Give the items to the player
+				int itemsTaken = 0;
+
 				for (int j = 0; j < chest->chestItems.size(); ++j) {
+					if (inventory.size() >= maxItems) {
+						AppendActionResult(currName + "'s inventory is full! They cannot take any more items from the chest.");
+
+						break;
+					}
+
 					this->AddItem(chest->chestItems[j]);
+					itemsTaken++;
 				}
 
 				// Remove the items from the chest
-				chest->chestItems.clear();
+				chest->chestItems.erase(chest->chestItems.begin(), chest->chestItems.begin() + itemsTaken);
 
 				break;
 			}
@@ -136,7 +229,13 @@ void Player::Interact(char& object, int& x, int& y) {
 
 				Item* item = items[i];
 
-				PrintActionResult("You pick up a " + item->itemName + ".");
+				if (inventory.size() >= maxItems) {
+					AppendActionResult(currName + "'s inventory is full! They cannot pick up the " + item->itemName + ".");
+
+					break;
+				}
+
+				AppendActionResult(currName + " pick up a " + item->itemName + ".");
 				this->AddItem(item);
 				items.erase(items.begin() + i);
 
@@ -149,19 +248,136 @@ void Player::Interact(char& object, int& x, int& y) {
 
 			break;
 		default:
-			PrintActionResult("There is nothing in that direction!");
+			AppendActionResult("There is nothing in that direction!");
 
 			break;
 	}
+}
 
-	if (!potionName.empty()) {
-		Item* potion = new Potion(x, y, potionName, healthAmount);
+// An 'Enemy' class to represent an enemy
+Enemy::Enemy(int newX, int newY, string newName, int newHealth, int newMaxHealth, int newAttack, int newArmor, string potName, int potValue) {
+	x = newX;
+	y = newY;
+	name = newName;
+	health = newHealth;
+	maxHealth = newMaxHealth;
+	attack = newAttack;
+	armor = newArmor;
+	healthPotName = potName;
+	healthPotValue = potValue;
 
-		items.push_back(potion);
+	uniqueID = enemyIDIterator++;
+
+	enemies.push_back(this);
+	RegisterMapChange('M', x, y);
+};
+
+void Enemy::Attack(Player* player) {
+	int damage = player->currArmor - attack;
+
+	if (player->currArmor > 0) {
+		Armor* armor;
+
+		for (int i = 0; i < player->inventory.size(); ++i) {
+			if (player->inventory[i]->uniqueID != player->activeArmorID) continue;
+
+			armor = (Armor*)player->inventory[i];
+			break;
+		}
+
+		if (damage <= 0) {
+			AppendActionResult("The " + name + " attacks " + player->currName + " for " + to_string(attack) + " damage, breaking " + player->currName + "'s " + armor->itemName + "!");
+
+			player->RemoveItem(player->activeArmorID, false);
+		} else {
+			player->currArmor = damage;
+
+			armor->armor = damage;
+
+			AppendActionResult("The " + name + " attacks " + player->currName + " for " + to_string(attack) + " damage, leaving them with " + to_string(damage) + " armor!");
+		}
+
+		DrawSideText(player);
+	} else {
+		player->currHealth = max(0, player->currHealth - attack);
+
+		DrawSideText(player);
+
+		if (player->currHealth == 0) {
+			AppendActionResult("The " + name + " attacks " + player->currName + " for " + to_string(attack) + " damage, killing them!");
+
+			RegisterMapChange(' ', player->x, player->y);
+			DrawMap();
+
+			Sleep(2000);
+
+			// Game over
+			AppendActionResult("Game over! Press any key to exit...");
+
+			getch();
+			exit(0);
+		} else {
+			AppendActionResult("The " + name + " attacks " + player->currName + " for " + to_string(attack) + " damage, leaving them with " + to_string(player->currHealth) + " health!");
+		}
 	}
 }
 
-// A 'chest' class to store items
+// A 'Boss' class to represent a boss, based on the 'Enemy' class
+Boss::Boss(int newX, int newY, string newName, int newHealth, int newMaxHealth, int newAttack, int newArmor, string potName, int potValue) : Enemy(newX, newY, newName, newHealth, newMaxHealth, newAttack, newArmor, potName, potValue) {
+	enraged = false;
+};
+
+void Boss::BossAttack(Player* player) {
+	int damage = player->currArmor - attack;
+
+	if (player->currArmor > 0) {
+		Armor* armor;
+
+		for (int i = 0; i < player->inventory.size(); ++i) {
+			if (player->inventory[i]->uniqueID != player->activeArmorID) continue;
+
+			armor = (Armor*)player->inventory[i];
+			break;
+		}
+
+		if (damage <= 0) {
+			AppendActionResult("The " + name + " strikes " + player->currName + " for " + to_string(attack) + " damage, destroying " + player->currName + "'s " + armor->itemName + "!");
+
+			player->RemoveItem(player->activeArmorID, false);
+		} else {
+			player->currArmor = damage;
+
+			armor->armor = damage;
+
+			AppendActionResult("The " + name + " strikes " + player->currName + " for " + to_string(attack) + " damage, leaving them with " + to_string(damage) + " armor!");
+		}
+
+		DrawSideText(player);
+	} else {
+		player->currHealth = max(0, player->currHealth - attack);
+
+		DrawSideText(player);
+
+		if (player->currHealth == 0) {
+			AppendActionResult("The " + name + " strikes " + player->currName + " for " + to_string(attack) + " damage, slaying them!");
+
+			RegisterMapChange(' ', player->x, player->y);
+			DrawMap();
+
+			Sleep(2000);
+
+			// Game over
+			AppendActionResult("Game over! Press any key to exit...");
+
+			getch();
+			exit(0);
+		} else {
+			AppendActionResult("The " + name + " strikes " + player->currName + " for " + to_string(attack) + " damage, leaving them with " + to_string(player->currHealth) + " health!");
+		}
+	}
+}
+
+// A 'Chest' class to store items
 Chest::Chest(int newX, int newY) {
 	x = newX;
 	y = newY;

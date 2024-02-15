@@ -9,13 +9,13 @@ using namespace std;
 
 extern vector<Item*> items;
 
-int itemIterator = 1;
+int itemIDIterator = 1;
 
 Item::Item(string name, bool addToItemPool) {
 	x = 0;
 	y = 0;
 	itemName = name;
-	uniqueID = itemIterator++;
+	uniqueID = itemIDIterator++;
 	oneUse = false;
 
 	if (!addToItemPool) return;
@@ -47,7 +47,7 @@ string Potion::OnUse(Player* player, bool noNotify) {
 
 	if (noNotify) return "";
 
-	return "You drank the " + itemName + " and gained " + to_string(health) + " HP!";
+	return " drank the " + itemName + " and gained " + to_string(health) + " HP!";
 }
 
 Weapon::Weapon(string name, int value, bool addToItemPool) : Item(name, addToItemPool) {
@@ -60,7 +60,7 @@ string Weapon::OnUse(Player* player, bool noNotify) {
 	if (player->activeWeaponID == uniqueID) {
 		if (noNotify) return "";
 
-		return "You already have the " + itemName + " equipped!";
+		return player->currName + " already have the " + itemName + " equipped!";
 	}
 
 	player->currAttack = damage;
@@ -68,7 +68,7 @@ string Weapon::OnUse(Player* player, bool noNotify) {
 
 	if (noNotify) return "";
 
-	return "You equipped the " + itemName + ". Your new attack damage is " + to_string(damage) + "!";
+	return player->currName + " equipped the " + itemName + ". " + player->currName + "'s new attack damage is " + to_string(damage) + "!";
 }
 
 void Weapon::OnRemoved(Player* player) {
@@ -107,7 +107,7 @@ string Armor::OnUse(Player* player, bool noNotify) {
 	if (player->activeArmorID == uniqueID) {
 		if (noNotify) return "";
 
-		return "You already have the " + itemName + " equipped!";
+		return player->currName + " already have the " + itemName + " equipped!";
 	}
 
 	player->currArmor = armor;
@@ -115,7 +115,7 @@ string Armor::OnUse(Player* player, bool noNotify) {
 
 	if (noNotify) return "";
 
-	return "You equipped the " + itemName + ". Your new armor is " + to_string(armor) + "!";
+	return player->currName + " equipped the " + itemName + ". " + player->currName + "'s new armor is " + to_string(armor) + "!";
 }
 
 void Armor::OnRemoved(Player* player) {

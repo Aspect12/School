@@ -62,6 +62,27 @@ int main() {
 	srand(time(0)); // Set the random seed
 	HideCursor(); // Hide the cursor
 
+	string playerName;
+
+	cout << endl << "Enter your Hero's name: ";
+	getline(cin, playerName);
+
+	if (playerName.length() < 1) {
+		cout << "Your Hero's name cannot be smaller than 1 character!" << endl << endl;
+
+		system("pause");
+		return 1;
+	} else if (playerName.length() > 20) {
+		cout << "Your Hero's name cannot exceed 20 characters!" << endl << endl;
+
+		system("pause");
+		return 1;
+	}
+
+	Sleep(1000);
+	system("cls");
+	Sleep(1000);
+
 	int count = 0;
 	string mapText;
 
@@ -79,7 +100,7 @@ int main() {
 	mapFile.close();
 
 	// Create the player
-	Player* player = new Player(10, 5, "Hero", 40, 40, 0);
+	Player* player = new Player(10, 5, playerName, 40, 40, 0);
 
 	// Create all the items
 	Weapon shortSword("Short Sword", 6);
@@ -95,11 +116,19 @@ int main() {
 	Chest chest2(7, 50);
 	Chest chest3(13, 38);
 
+	// Create all the enemies
+	Enemy goblin(11, 18, "Goblin", 20, 20, 4, 2, "Small Health Potion", 10);
+	Enemy orc(6, 35, "Orc", 25, 25, 5, 3, "Health Potion", 20);
+	Enemy troll(14, 51, "Troll", 30, 30, 6, 4, "Large Health Potion", 30);
+	Boss elve(10, 75, "Elve", 35, 35, 6, 4, "Super Health Potion", 50);
+
 	// Draw the map for the first time
 	DrawMap();
 
 	// Draw game information on the right side of the map
 	DrawSideText(player);
+
+	AppendActionResult(player->currName + " enters the realm...");
 
 	// Control handling
 	do {
@@ -116,6 +145,12 @@ int main() {
 			case 'W':
 				if (::map[player->x - 1][player->y] != ' ') break;
 
+				if (player->inCombat != -1) {
+					AppendActionResult(player->currName + " cannot move while in combat!");
+
+					break;
+				}
+
 				RegisterMapChange(' ', player->x, player->y);
 				player->x--;
 				RegisterMapChange('0', player->x, player->y);
@@ -125,6 +160,12 @@ int main() {
 			case 's': // Move down
 			case 'S':
 				if (::map[player->x + 1][player->y] != ' ') break;
+
+				if (player->inCombat != -1) {
+					AppendActionResult(player->currName + " cannot move while in combat!");
+
+					break;
+				}
 
 				RegisterMapChange(' ', player->x, player->y);
 				player->x++;
@@ -136,6 +177,12 @@ int main() {
 			case 'A':
 				if (::map[player->x][player->y - 1] != ' ') break;
 
+				if (player->inCombat != -1) {
+					AppendActionResult(player->currName + " cannot move while in combat!");
+
+					break;
+				}
+
 				RegisterMapChange(' ', player->x, player->y);
 				player->y--;
 				RegisterMapChange('0', player->x, player->y);
@@ -145,6 +192,12 @@ int main() {
 			case 'd': // Move right
 			case 'D':
 				if (::map[player->x][player->y + 1] != ' ') break;
+
+				if (player->inCombat != -1) {
+					AppendActionResult(player->currName + " cannot move while in combat!");
+
+					break;
+				}
 
 				RegisterMapChange(' ', player->x, player->y);
 				player->y++;
@@ -187,14 +240,14 @@ int main() {
 			case KEY_NINE:
 				{
 					if ((control - KEY_ONE) >= player->inventory.size()) {
-						PrintActionResult("You do not have an item in slot " + to_string(control - KEY_ONE + 1) + "!");
+						AppendActionResult(player->currName + " do not have an item in slot " + to_string(control - KEY_ONE + 1) + "!");
 
 						break;
 					}
 
 					Item* item = player->inventory[control - KEY_ONE];
 
-					PrintActionResult(item->OnUse(player));
+					AppendActionResult(item->OnUse(player));
 
 					if (item->oneUse) player->RemoveItem(item->uniqueID, false);
 
@@ -216,7 +269,7 @@ int main() {
 					int slot = keyShiftMap[control];
 
 					if (slot >= player->inventory.size()) {
-						PrintActionResult("You do not have an item in slot " + to_string(slot + 1) + "!");
+						AppendActionResult(player->currName + " do not have an item in slot " + to_string(slot + 1) + "!");
 
 						break;
 					}
@@ -236,15 +289,15 @@ int main() {
 						dropX = player->x + dx;
 						dropY = player->y + dy;
 
-						if (::map[dropX][dropY] == ' ') {
-							foundFreeSpot = true;
+						if (::map[dropX][dropY] != ' ') continue;
 
-							break;
-						}
+						foundFreeSpot = true;
+
+						break;
 					}
 
 					if (!foundFreeSpot) {
-						PrintActionResult("You cannot drop the " + item->itemName + " here!");
+						AppendActionResult(player->currName + " cannot drop the " + item->itemName + " here!");
 
 						break;
 					}
@@ -252,7 +305,7 @@ int main() {
 					item->x = dropX;
 					item->y = dropY;
 
-					PrintActionResult("You dropped the " + item->itemName + ".");
+					AppendActionResult(player->currName + " dropped the " + item->itemName + ".");
 
 					player->RemoveItem(item->uniqueID, true);
 

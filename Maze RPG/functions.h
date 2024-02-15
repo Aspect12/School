@@ -27,13 +27,16 @@ void HideCursor();
 void PrintColored(char& character);
 
 // Function to clear specific lines from the console
-void ClearLines(int& startLine, int& endLine);
+void ClearLines(int startLine, int endLine);
 
 // Function to clear the action line and print the new action
-void PrintActionResult(std::string action);
+void AppendActionResult(std::string action);
 
 // Function to draw the pending changes to the map
 void DrawMap();
 
 // Function to draw the game instructions
 void DrawSideText(Player* player);
+
+// Function to draw the Boss
+void DrawBoss(Player* player, char character, int x, int y);

@@ -39,6 +39,10 @@ void PrintColored(char& character) {
 			SetConsoleTextAttribute(hConsole, FOREGROUND_RED); // Red
 
 			break;
+		case 'B': // Boss
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_BLUE); // Purple
+
+			break;
 		case 'C': // Chest
 			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN); // Yellow
 
@@ -61,7 +65,6 @@ void PrintColored(char& character) {
 	SetConsoleTextAttribute(hConsole, 7);
 }
 
-
 // Function to clear specific lines from the console
 void ClearLines(int startLine, int endLine) {
 	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -78,9 +81,25 @@ void ClearLines(int startLine, int endLine) {
 }
 
 // Function to clear the action line and print the new action
-void PrintActionResult(string action) {
-	ClearLines(MAPHEIGHT + 1, MAPHEIGHT + 1);
-	cout << "  " << action << endl;
+string storedActions = "";
+
+void AppendActionResult(string action) {
+	storedActions = "  > " + action + "\n" + storedActions;
+
+	ClearLines(MAPHEIGHT + 1, MAPHEIGHT + 6);
+
+	// 5 lines only
+	int newlineCount = 0;
+
+	for (int i = 0; i < storedActions.size(); ++i) {
+		if (storedActions[i] == '\n') newlineCount++;
+	}
+
+	if (newlineCount >= 6) {
+		storedActions = storedActions.substr(0, storedActions.find_last_of('\n'));
+	}
+
+	cout << storedActions;
 }
 
 // Function to draw the pending changes to the map
@@ -98,67 +117,125 @@ void DrawMap() {
 
 // Function to draw the game instructions
 void DrawSideText(Player* player) {
+	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
 	COORD position = {MAPWIDTH + 2, 1};
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "--===== CONTROLS =====--";
 
 	position.Y += 1;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "Movement: WASD";
 
 	position.Y += 1;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "Interaction: Arrow Keys";
 
+	position.Y += 1;
+	SetConsoleCursorPosition(hConsole, position);
+	cout << "Use Item: 1-7";
+
+	position.Y += 1;
+	SetConsoleCursorPosition(hConsole, position);
+	cout << "Drop Item: SHIFT + 1-7";
+
 	position.Y += 2;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "--==== STATISTICS ====--";
 
 	position.Y += 1;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "Player Name: " << player->currName;
 
 	position.Y += 1;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "                         "; // Cancer
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY); // Light red
 	cout << "Health: " << player->currHealth << "/" << player->maxHealth;
 
 	position.Y += 1;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "                         ";
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
+	SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light blue
 	cout << "Armor: " << player->currArmor;
 
 	position.Y += 1;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "                         ";
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
+	SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light orange
 	cout << "Attack DMG: " << player->currAttack;
 
+	SetConsoleTextAttribute(hConsole, 7);
+
 	position.Y += 2;
-	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	SetConsoleCursorPosition(hConsole, position);
 	cout << "--===== BACKPACK =====--";
 
 	// Loop through the player's inventory and print the items
-
-	// Loop from 1 to 10
-	for (int i = 0; i <= 8; ++i) {
+	for (int i = 0; i < player->maxItems; i++) {
 		position.Y += 1;
-		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+		SetConsoleCursorPosition(hConsole, position);
 		cout << "                         ";
-		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+		SetConsoleCursorPosition(hConsole, position);
 
 		if (i < player->inventory.size()) {
 			Item* item = player->inventory[i];
 
-			if (player->activeWeaponID == item->uniqueID || player->activeArmorID == item->uniqueID) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light green
+			if (player->activeWeaponID == item->uniqueID || player->activeArmorID == item->uniqueID) SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light green
 
 			cout << i + 1 << ". " << item->itemName;
 
-			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+			SetConsoleTextAttribute(hConsole, 7);
 		} else {
 			cout << i + 1 << ". ";
+		}
+	}
+}
+
+// Function to draw the Boss
+void DrawBoss(Player* player, char character, int x, int y) {
+	RegisterMapChange(character, x, y);
+
+	if (player->x > x) {
+		RegisterMapChange(character, x, y + 1);
+		RegisterMapChange(character, x, y - 1);
+		RegisterMapChange(character, x - 1, y);
+		RegisterMapChange(character, x - 1, y + 1);
+		RegisterMapChange(character, x - 1, y - 1);
+		RegisterMapChange(character, x - 2, y);
+		RegisterMapChange(character, x - 2, y + 1);
+		RegisterMapChange(character, x - 2, y - 1);
+	} else if (player->x < x) {
+		RegisterMapChange(character, x, y - 1);
+		RegisterMapChange(character, x, y + 1);
+		RegisterMapChange(character, x + 1, y);
+		RegisterMapChange(character, x + 1, y - 1);
+		RegisterMapChange(character, x + 1, y + 1);
+		RegisterMapChange(character, x + 2, y);
+		RegisterMapChange(character, x + 2, y - 1);
+		RegisterMapChange(character, x + 2, y + 1);
+	} else {
+		if (player->y > y) {
+			RegisterMapChange(character, x - 1, y);
+			RegisterMapChange(character, x + 1, y);
+			RegisterMapChange(character, x, y - 1);
+			RegisterMapChange(character, x - 1, y - 1);
+			RegisterMapChange(character, x + 1, y - 1);
+			RegisterMapChange(character, x, y - 2);
+			RegisterMapChange(character, x - 1, y - 2);
+			RegisterMapChange(character, x + 1, y - 2);
+		} else {
+			RegisterMapChange(character, x - 1, y);
+			RegisterMapChange(character, x + 1, y);
+			RegisterMapChange(character, x, y + 1);
+			RegisterMapChange(character, x - 1, y + 1);
+			RegisterMapChange(character, x + 1, y + 1);
+			RegisterMapChange(character, x, y + 2);
+			RegisterMapChange(character, x - 1, y + 2);
+			RegisterMapChange(character, x + 1, y + 2);
 		}
 	}
 }

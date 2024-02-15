@@ -18,16 +18,19 @@ public:
 // A 'Player' class to represent the player
 class Player {
 public:
-	int x, y;
-	std::string currName;
 	std::vector<Item*> inventory;
+	std::string currName;
+
+	int x, y;
 	int currHealth;
 	int maxHealth;
 	int currArmor;
 	int currAttack;
 
+	int maxItems;
 	int activeWeaponID;
 	int activeArmorID;
+	int inCombat;
 
 	Player(int newX, int newY, std::string name, int health, int maxHealth, int armor);
 
@@ -38,7 +41,35 @@ public:
 	void Interact(char& object, int& x, int& y);
 };
 
-// A 'chest' class to store items
+// An 'Enemy' class to represent an enemy
+class Enemy {
+public:
+	int x, y;
+	std::string name;
+	int health;
+	int maxHealth;
+	int attack;
+	int armor;
+	int uniqueID;
+	std::string healthPotName;
+	int healthPotValue;
+
+	Enemy(int newX, int newY, std::string newName, int newHealth, int newMaxHealth, int newAttack, int newArmor, std::string potName, int potValue);
+
+	void Attack(Player* player);
+};
+
+// A 'Boss' class to represent a boss, based on the 'Enemy' class
+class Boss : public Enemy {
+public:
+	bool enraged;
+
+	Boss(int newX, int newY, std::string newName, int newHealth, int newMaxHealth, int newAttack, int newArmor, std::string potName, int potValue);
+
+	void BossAttack(Player* player);
+};
+
+// A 'Chest' class to store items
 class Chest {
 public:
 	int x, y;
