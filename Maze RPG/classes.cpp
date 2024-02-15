@@ -26,49 +26,138 @@ Player::Player(int newX, int newY, string name, int health, int maxHP, int armor
 	currArmor = armor;
 
 	// Give the player a starting weapon
-	Weapon dagger("Dagger", 4);
-	activeWeaponID = dagger.uniqueID;
+	Weapon* dagger = new Weapon("Dagger", 4, false);
+	activeWeaponID = dagger->uniqueID;
 	inventory.push_back(dagger);
 	currAttack = 4;
 
 	RegisterMapChange('0', x, y);
 };
 
-void Player::AddItem(Item item) {
+void Player::AddItem(Item* item) {
 	inventory.push_back(item);
 
 	// If the item is a weapon or armor, and it's better than the current one, equip it
-	if (item.type == ITEM_WEAPON) {
-		Weapon* weapon = (Weapon*)&item;
+	if (item->type == ITEM_WEAPON) {
+		Weapon* weapon = (Weapon*)item;
 
-		cout << weapon->damage << endl;
 		if (weapon->damage > currAttack) {
-			cout << weapon->damage << endl;
-			cout << weapon->uniqueID << endl;
-			currAttack = weapon->damage;
-
-			activeWeaponID = weapon->uniqueID;
+			weapon->OnUse(this, true);
 		}
-	} else if (item.type == ITEM_ARMOR) {
-		Armor* armor = (Armor*)&item;
+	} else if (item->type == ITEM_ARMOR) {
+		Armor* armor = (Armor*)item;
 
 		if (armor->armor > currArmor) {
-			currArmor = armor->armor;
-
-			activeArmorID = armor->uniqueID;
+			armor->OnUse(this, true);
 		}
 	}
 
 	// Re-draw the side text
-	DrawSideText(*this);
+	DrawSideText(this);
 }
 
-void Player::RemoveItem(string item) {
+void Player::RemoveItem(int uniqueID, bool noDestroy) {
 	for (int i = 0; i < inventory.size(); ++i) {
-		if (inventory[i].itemName != item) continue;
+		if (inventory[i]->uniqueID != uniqueID) continue;
+
+		inventory[i]->OnRemoved(this);
+
+		if (!noDestroy) delete inventory[i];
 
 		inventory.erase(inventory.begin() + i);
+
 		break;
+	}
+}
+
+void Player::Interact(char& object, int& x, int& y) {
+	string potionName;
+	int healthAmount;
+
+	switch (object) {
+		case '#': // Wall
+			PrintActionResult("You push the wall. Nothing happens.");
+
+			break;
+		case 'M': // Monster
+			// Drop a random health potion from the items list once the monster is killed
+			switch (rand() % 4) {
+				case 0:
+					potionName = "Small Health Potion";
+					healthAmount = 10;
+
+					break;
+				case 1:
+					potionName = "Medium Health Potion";
+					healthAmount = 20;
+
+					break;
+				case 2:
+					potionName = "Large Health Potion";
+					healthAmount = 30;
+
+					break;
+				case 3:
+					potionName = "Super Health Potion";
+					healthAmount = 40;
+
+					break;
+			}
+
+			PrintActionResult("You attack and kill the monster. It drops a " + potionName + ".");
+
+			break;
+		case 'C': // Chest
+			for (int i = 0; i < chests.size(); ++i) {
+				if (chests[i]->x != x || chests[i]->y != y) continue;
+
+				Chest* chest = chests[i];
+
+				PrintActionResult("You open the chest and find: " + chest->GetListOfItems());
+
+				// Give the items to the player
+				for (int j = 0; j < chest->chestItems.size(); ++j) {
+					this->AddItem(chest->chestItems[j]);
+				}
+
+				// Remove the items from the chest
+				chest->chestItems.clear();
+
+				break;
+			}
+
+			break;
+		case 'H': // Health
+		case 'A': // Armor
+		case 'W': // Weapon
+			// Find the item in the items list based on its position and add it to the player's inventory
+			for (int i = 0; i < items.size(); ++i) {
+				if (items[i]->x != x || items[i]->y != y) continue;
+
+				Item* item = items[i];
+
+				PrintActionResult("You pick up a " + item->itemName + ".");
+				this->AddItem(item);
+				items.erase(items.begin() + i);
+
+				RegisterMapChange(' ', x, y);
+
+				DrawSideText(this);
+
+				break;
+			}
+
+			break;
+		default:
+			PrintActionResult("There is nothing in that direction!");
+
+			break;
+	}
+
+	if (!potionName.empty()) {
+		Item* potion = new Potion(x, y, potionName, healthAmount);
+
+		items.push_back(potion);
 	}
 }
 
@@ -90,7 +179,7 @@ Chest::Chest(int newX, int newY) {
 
 		if (weapon->type != ITEM_WEAPON) continue;
 
-		chestItems.push_back(*weapon);
+		chestItems.push_back(weapon);
 		items.erase(items.begin() + index);
 
 		break;
@@ -102,7 +191,7 @@ Chest::Chest(int newX, int newY) {
 
 		if (armor->type != ITEM_ARMOR) continue;
 
-		chestItems.push_back(*armor);
+		chestItems.push_back(armor);
 		items.erase(items.begin() + index);
 
 		break;
@@ -111,7 +200,7 @@ Chest::Chest(int newX, int newY) {
 
 void Chest::RemoveItem(string item) {
 	for (int i = 0; i < chestItems.size(); ++i) {
-		if (chestItems[i].itemName != item) continue;
+		if (chestItems[i]->itemName != item) continue;
 
 		chestItems.erase(chestItems.begin() + i);
 		break;
@@ -122,7 +211,7 @@ string Chest::GetListOfItems() {
 	string items;
 
 	for (int i = 0; i < chestItems.size(); ++i) {
-		items += chestItems[i].itemName + ", ";
+		items += chestItems[i]->itemName + ", ";
 	}
 
 	if (items.empty()) return "Nothing!";

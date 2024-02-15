@@ -47,11 +47,20 @@ void PrintColored(char& character) {
 			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY); // Light red
 
 			break;
+		case 'W': // Weapon
+			SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light orange
+
+			break;
+		case 'A': // Armor
+			SetConsoleTextAttribute(hConsole, FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light blue
+
+			break;
 	}
 
 	cout << character;
 	SetConsoleTextAttribute(hConsole, 7);
 }
+
 
 // Function to clear specific lines from the console
 void ClearLines(int startLine, int endLine) {
@@ -74,97 +83,6 @@ void PrintActionResult(string action) {
 	cout << "  " << action << endl;
 }
 
-// Interaction handling
-void Interact(Player& player, char& object, int& x, int& y) {
-	string potionName;
-	int healthAmount;
-
-	switch (object) {
-		case '#': // Wall
-			PrintActionResult("You push the wall. Nothing happens.");
-
-			break;
-		case 'M': // Monster
-			// Drop a random health potion from the items list once the monster is killed
-			switch (rand() % 4) {
-				case 0:
-					potionName = "Small Health Potion";
-					healthAmount = 10;
-
-					break;
-				case 1:
-					potionName = "Medium Health Potion";
-					healthAmount = 20;
-
-					break;
-				case 2:
-					potionName = "Large Health Potion";
-					healthAmount = 30;
-
-					break;
-				case 3:
-					potionName = "Super Health Potion";
-					healthAmount = 40;
-
-					break;
-			}
-
-			PrintActionResult("You attack and kill the monster. It drops a " + potionName + ".");
-
-			break;
-		case 'C': // Chest
-			for (int i = 0; i < chests.size(); ++i) {
-				if (chests[i]->x != x || chests[i]->y != y) continue;
-
-				Chest* chest = chests[i];
-
-				PrintActionResult("You open the chest and find: " + chest->GetListOfItems());
-
-				// Give the items to the player
-				for (int j = 0; j < chest->chestItems.size(); ++j) {
-					player.AddItem(chest->chestItems[j]);
-				}
-
-				// Remove the items from the chest
-				chest->chestItems.clear();
-
-				break;
-			}
-
-			break;
-		case 'H': // Health
-			// Find the potion in the items list based on its position and add it to the player's inventory
-			for (int i = 0; i < items.size(); ++i) {
-				cout << items[i]->x << " " << items[i]->y << endl;
-
-				if (items[i]->x != x || items[i]->y != y) continue;
-
-				Potion* potion = (Potion*)items[i];
-
-				PrintActionResult("You pick up a " + potion->itemName + ".");
-				player.AddItem(*potion);
-				items.erase(items.begin() + i);
-
-				DrawSideText(player);
-
-				break;
-			}
-
-			break;
-		default:
-			PrintActionResult("There is nothing in that direction!");
-
-			break;
-	}
-
-	// If a monster was killed, drop a health potion
-	if (!potionName.empty()) {
-		Potion potion(x, y, potionName, healthAmount);
-
-		items.push_back(&potion);
-	}
-}
-
 // Function to draw the pending changes to the map
 void DrawMap() {
 	for (int i = 0; i < pendingChanges.size(); ++i) {
@@ -179,7 +97,7 @@ void DrawMap() {
 }
 
 // Function to draw the game instructions
-void DrawSideText(Player& player) {
+void DrawSideText(Player* player) {
 	COORD position = {MAPWIDTH + 2, 1};
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
 	cout << "--===== CONTROLS =====--";
@@ -198,35 +116,49 @@ void DrawSideText(Player& player) {
 
 	position.Y += 1;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
-	cout << "Player Name: " << player.currName;
+	cout << "Player Name: " << player->currName;
 
 	position.Y += 1;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
-	cout << "Health: " << player.currHealth << "/" << player.maxHealth;
+	cout << "                         "; // Cancer
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	cout << "Health: " << player->currHealth << "/" << player->maxHealth;
 
 	position.Y += 1;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
-	cout << "Armor: " << player.currArmor;
+	cout << "                         ";
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	cout << "Armor: " << player->currArmor;
 
 	position.Y += 1;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
-	cout << "Attack DMG: " << player.currAttack;
+	cout << "                         ";
+	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+	cout << "Attack DMG: " << player->currAttack;
 
 	position.Y += 2;
 	SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
 	cout << "--===== BACKPACK =====--";
 
 	// Loop through the player's inventory and print the items
-	for (int i = 0; i < player.inventory.size(); ++i) {
+
+	// Loop from 1 to 10
+	for (int i = 0; i <= 8; ++i) {
 		position.Y += 1;
 		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
+		cout << "                         ";
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), position);
 
-		Item& item = player.inventory[i];
+		if (i < player->inventory.size()) {
+			Item* item = player->inventory[i];
 
-		if (player.activeWeaponID == item.uniqueID || player.activeArmorID == item.uniqueID) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light green
+			if (player->activeWeaponID == item->uniqueID || player->activeArmorID == item->uniqueID) SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_GREEN | FOREGROUND_INTENSITY); // Light green
 
-		cout << i + 1 << ". " << item.itemName;
+			cout << i + 1 << ". " << item->itemName;
 
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+			SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), 7);
+		} else {
+			cout << i + 1 << ". ";
+		}
 	}
 }

@@ -32,13 +32,8 @@ void ClearLines(int& startLine, int& endLine);
 // Function to clear the action line and print the new action
 void PrintActionResult(std::string action);
 
-// Interaction handling
-void Interact(Player& player, char& item, int& x, int& y);
-
 // Function to draw the pending changes to the map
 void DrawMap();
 
 // Function to draw the game instructions
-void DrawSideText(Player& player);
-
-void AddChest(int x, int y, std::vector<Item> items);
+void DrawSideText(Player* player);

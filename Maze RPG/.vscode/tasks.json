@@ -16,7 +16,8 @@
 				"${workspaceRoot}/items.cpp",
 				"${workspaceRoot}/functions.cpp",
 				"-o",
-				"${workspaceRoot}/output/mazerpg.exe"
+				"${workspaceRoot}/output/mazerpg.exe",
+				"-gdwarf-4"
 			],
 			"problemMatcher": [
 				"$gcc"

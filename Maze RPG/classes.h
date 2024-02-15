@@ -20,7 +20,7 @@ class Player {
 public:
 	int x, y;
 	std::string currName;
-	std::vector<Item> inventory;
+	std::vector<Item*> inventory;
 	int currHealth;
 	int maxHealth;
 	int currArmor;
@@ -31,16 +31,18 @@ public:
 
 	Player(int newX, int newY, std::string name, int health, int maxHealth, int armor);
 
-	void AddItem(Item item);
+	void AddItem(Item* item);
 
-	void RemoveItem(std::string item);
+	void RemoveItem(int uniqueID, bool noDestroy);
+
+	void Interact(char& object, int& x, int& y);
 };
 
 // A 'chest' class to store items
 class Chest {
 public:
 	int x, y;
-	std::vector<Item> chestItems;
+	std::vector<Item*> chestItems;
 
 	Chest(int x, int y);
 
