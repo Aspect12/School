@@ -117,9 +117,9 @@ int main() {
 	Chest chest3(13, 38);
 
 	// Create all the enemies
-	Enemy goblin(11, 18, "Goblin", 20, 20, 4, 2, "Small Health Potion", 10);
-	Enemy orc(6, 35, "Orc", 25, 25, 5, 3, "Health Potion", 20);
-	Enemy troll(14, 51, "Troll", 30, 30, 6, 4, "Large Health Potion", 30);
+	Enemy goblin(11, 18, "Goblin", 20, 20, 4, 2, "Small Health Potion", 15);
+	Enemy orc(6, 35, "Orc", 25, 25, 5, 3, "Health Potion", 25);
+	Enemy troll(14, 51, "Troll", 30, 30, 6, 4, "Large Health Potion", 35);
 	Boss elve(10, 75, "Elve", 35, 35, 6, 4, "Super Health Potion", 50);
 
 	// Draw the map for the first time
