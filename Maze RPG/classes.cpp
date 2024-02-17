@@ -127,7 +127,7 @@ void Player::Interact(char& object, int& x, int& y) {
 				enemy->health -= currAttack;
 
 				if (enemy->health <= 0) {
-					if (((Boss*)enemy)->maxHealth == 35 && !((Boss*)enemy)->enraged) {
+					if (((Boss*)enemy)->maxHealth == 35 && ((Boss*)enemy)->enraged) {
 						result += "slaying it! ";
 
 						AppendActionResult(result);
@@ -235,7 +235,7 @@ void Player::Interact(char& object, int& x, int& y) {
 					break;
 				}
 
-				AppendActionResult(currName + " pick up a " + item->itemName + ".");
+				AppendActionResult(currName + " picked up a " + item->itemName + ".");
 				this->AddItem(item);
 				items.erase(items.begin() + i);
 

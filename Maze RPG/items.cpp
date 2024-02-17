@@ -47,7 +47,7 @@ string Potion::OnUse(Player* player, bool noNotify) {
 
 	if (noNotify) return "";
 
-	return " drank the " + itemName + " and gained " + to_string(health) + " HP!";
+	return player->currName + " drank the " + itemName + " and gained " + to_string(health) + " HP!";
 }
 
 Weapon::Weapon(string name, int value, bool addToItemPool) : Item(name, addToItemPool) {
