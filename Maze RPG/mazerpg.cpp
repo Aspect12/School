@@ -138,8 +138,6 @@ int main() {
 			control = getch(); // Read the second code
 		}
 
-		int newX, newY;
-
 		switch (control) {
 			case 'w': // Move up
 			case 'W':
@@ -147,6 +145,25 @@ int main() {
 
 				if (player->inCombat != -1) {
 					AppendActionResult(player->currName + " cannot move while in combat!");
+
+					break;
+				}
+
+				// If there's a monster around the player, start combat with no initiative
+				if (::map[player->x - 1][player->y] == 'M') {
+					player->Interact('M', player->x - 1, player->y, true);
+
+					break;
+				} else if (::map[player->x + 1][player->y] == 'M') {
+					player->Interact('M', player->x + 1, player->y, true);
+
+					break;
+				} else if (::map[player->x][player->y - 1] == 'M') {
+					player->Interact('M', player->x, player->y - 1, true);
+
+					break;
+				} else if (::map[player->x][player->y + 1] == 'M') {
+					player->Interact('M', player->x, player->y + 1, true);
 
 					break;
 				}
@@ -167,6 +184,24 @@ int main() {
 					break;
 				}
 
+				if (::map[player->x - 1][player->y] == 'M') {
+					player->Interact('M', player->x - 1, player->y, true);
+
+					break;
+				} else if (::map[player->x + 1][player->y] == 'M') {
+					player->Interact('M', player->x + 1, player->y, true);
+
+					break;
+				} else if (::map[player->x][player->y - 1] == 'M') {
+					player->Interact('M', player->x, player->y - 1, true);
+
+					break;
+				} else if (::map[player->x][player->y + 1] == 'M') {
+					player->Interact('M', player->x, player->y + 1, true);
+
+					break;
+				}
+
 				RegisterMapChange(' ', player->x, player->y);
 				player->x++;
 				RegisterMapChange('0', player->x, player->y);
@@ -179,6 +214,24 @@ int main() {
 
 				if (player->inCombat != -1) {
 					AppendActionResult(player->currName + " cannot move while in combat!");
+
+					break;
+				}
+
+				if (::map[player->x - 1][player->y] == 'M') {
+					player->Interact('M', player->x - 1, player->y, true);
+
+					break;
+				} else if (::map[player->x + 1][player->y] == 'M') {
+					player->Interact('M', player->x + 1, player->y, true);
+
+					break;
+				} else if (::map[player->x][player->y - 1] == 'M') {
+					player->Interact('M', player->x, player->y - 1, true);
+
+					break;
+				} else if (::map[player->x][player->y + 1] == 'M') {
+					player->Interact('M', player->x, player->y + 1, true);
 
 					break;
 				}
@@ -199,6 +252,24 @@ int main() {
 					break;
 				}
 
+				if (::map[player->x - 1][player->y] == 'M') {
+					player->Interact('M', player->x - 1, player->y, true);
+
+					break;
+				} else if (::map[player->x + 1][player->y] == 'M') {
+					player->Interact('M', player->x + 1, player->y, true);
+
+					break;
+				} else if (::map[player->x][player->y - 1] == 'M') {
+					player->Interact('M', player->x, player->y - 1, true);
+
+					break;
+				} else if (::map[player->x][player->y + 1] == 'M') {
+					player->Interact('M', player->x, player->y + 1, true);
+
+					break;
+				}
+
 				RegisterMapChange(' ', player->x, player->y);
 				player->y++;
 				RegisterMapChange('0', player->x, player->y);
@@ -206,26 +277,22 @@ int main() {
 				break;
 
 			case KEY_UP: // Interact up
-				newX = player->x - 1;
-				player->Interact(::map[player->x - 1][player->y], newX, player->y);
+				player->Interact(::map[player->x - 1][player->y], player->x - 1, player->y, false);
 
 				break;
 
 			case KEY_DOWN: // Interact down
-				newX = player->x + 1;
-				player->Interact(::map[player->x + 1][player->y], newX, player->y);
+				player->Interact(::map[player->x + 1][player->y], player->x + 1, player->y, false);
 
 				break;
 
 			case KEY_LEFT: // Interact left
-				newY = player->y - 1;
-				player->Interact(::map[player->x][player->y - 1], player->x, newY);
+				player->Interact(::map[player->x][player->y - 1], player->x, player->y - 1, false);
 
 				break;
 
 			case KEY_RIGHT: // Interact right
-				newY = player->y + 1;
-				player->Interact(::map[player->x][player->y + 1], player->x, newY);
+				player->Interact(::map[player->x][player->y + 1], player->x, player->y + 1, false);
 
 				break;
 

@@ -80,7 +80,7 @@ void Player::RemoveItem(int uniqueID, bool noDestroy) {
 	}
 }
 
-void Player::Interact(char& object, int& x, int& y) {
+void Player::Interact(char object, int x, int y, bool altInteract) {
 	switch (object) {
 		case '#': // Wall
 			AppendActionResult(currName + " push the wall. Nothing happens.");
@@ -88,7 +88,7 @@ void Player::Interact(char& object, int& x, int& y) {
 			break;
 		case 'M': // Monster
 		case 'B': // Boss
-			if (activeWeaponID == -1) {
+			if (activeWeaponID == -1 && !altInteract) {
 				AppendActionResult(currName + " don't have a weapon to attack with!");
 
 				break;
@@ -100,24 +100,33 @@ void Player::Interact(char& object, int& x, int& y) {
 				Enemy* enemy = enemies[i];
 
 				if (inCombat == -1 && inCombat != enemy->uniqueID) {
-					AppendActionResult(currName + " engaged in combat with the " + enemy->name + "! ");
-					inCombat = enemy->uniqueID;
-
-					Sleep(1000);
-
-					// Roll a d20 for initiative
-					int playerInitiative = rand() % 20 + 1;
-					int enemyInitiative = rand() % 20 + 1;
-
-					if (playerInitiative > enemyInitiative || playerInitiative == enemyInitiative) {
-						AppendActionResult(currName + " gains initiative!");
-					} else {
-						AppendActionResult("The " + enemy->name + " gains initiative and strikes first!");
+					if (altInteract) {
+						AppendActionResult(currName + " tried to sneak past the " + enemy->name + ", but failed - the " + enemy->name + " noticed them and gained initiative!");
 
 						Sleep(1000);
 
 						enemy->Attack(this);
+					} else {
+						AppendActionResult(currName + " engaged in combat with the " + enemy->name + "! ");
+
+						Sleep(1000);
+
+						// Roll a d20 for initiative
+						int playerInitiative = rand() % 20 + 1;
+						int enemyInitiative = rand() % 20 + 1;
+
+						if (playerInitiative > enemyInitiative || playerInitiative == enemyInitiative) {
+							AppendActionResult(currName + " gains initiative!");
+						} else {
+							AppendActionResult("The " + enemy->name + " gains initiative and strikes first!");
+
+							Sleep(1000);
+
+							enemy->Attack(this);
+						}
 					}
+
+					inCombat = enemy->uniqueID;
 
 					break;
 				}
@@ -319,6 +328,17 @@ void Enemy::Attack(Player* player) {
 		} else {
 			AppendActionResult("The " + name + " attacks " + player->currName + " for " + to_string(attack) + " damage, leaving them with " + to_string(player->currHealth) + " health!");
 		}
+	}
+
+	// If the player has no weapon, keep attacking until they die
+	if (player->activeWeaponID == -1) {
+		Sleep(1000);
+
+		AppendActionResult(player->currName + " don't have a weapon to attack with!");
+
+		Sleep(1000);
+
+		Attack(player);
 	}
 }
 

@@ -38,7 +38,7 @@ public:
 
 	void RemoveItem(int uniqueID, bool noDestroy);
 
-	void Interact(char& object, int& x, int& y);
+	void Interact(char object, int x, int y, bool altInteract);
 };
 
 // An 'Enemy' class to represent an enemy
