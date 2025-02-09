@@ -47,19 +47,28 @@ int main() {
 		cout << "Block size out of bounds; clamping to " << blockSize << "." << endl;
 	}
 
-	while (true) {
-		cout << "Enter the key: ";
-		cin >> key;
+	cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
+	while (true) {
+		cout << "Enter the key (numbers separated by space): ";
+		getline(cin, key);
+
+		vector<int> keyNumbers;
+		string temp;
 		bool valid = true;
 
-		if (key.length() != blockSize) {
-			valid = false;
-			cout << "Key length must be equal to block size." << endl;
-		} else {
-			for (char c : key) {
-				if (isdigit(c)) continue;
-			
+		for (char c : key) {
+			if (isdigit(c) || c == ' ') {
+				if (c == ' ' && !temp.empty()) {
+					int num = stoi(temp) % 26;
+					if (num == 0) num = 26;
+
+					keyNumbers.push_back(num);
+					temp.clear();
+				} else if (isdigit(c)) {
+					temp += c;
+				}
+			} else {
 				valid = false;
 				cout << "Key must be a positive integer." << endl;
 
@@ -67,10 +76,30 @@ int main() {
 			}
 		}
 
-		if (valid) break;
+		if (valid && !temp.empty()) {
+			int num = stoi(temp) % 26;
+			if (num == 0) num = 26;
+			
+			keyNumbers.push_back(num);
+		}
 
-		cin.clear();
-		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		if (valid && keyNumbers.size() == blockSize) {
+			key.clear();
+
+			for (int num : keyNumbers) {
+				key += to_string(num);
+			}
+			
+			break;
+		} else {
+			cout << "Key length must be equal to block size." << endl;
+			valid = false;
+		}
+
+		if (!valid) {
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+		}
 	}
 
 	cout << "Original message: " << message << endl;
