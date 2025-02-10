@@ -81,13 +81,23 @@ int main() {
 
                 for (char c : key) {
                     if (isdigit(c) || c == ' ') {
-                        if (c == ' ' && !temp.empty()) {
-                            int num = stoi(temp) % 26;
-                            if (num == 0) num = 26;
+						if (c == ' ' && !temp.empty()) {
+							try {
+								int num = stoi(temp);
 
-                            keyNumbers.push_back(num);
-                            temp.clear();
-                        } else if (isdigit(c)) {
+								num = num % 26;
+								if (num == 0) num = 26;
+
+								keyNumbers.push_back(num);
+							} catch (const std::out_of_range& e) {
+								cout << "The number \"" << temp << "\" is too large. Please enter smaller numbers for the key." << endl;
+							
+								valid = false;
+								
+								break; 
+							}
+							temp.clear();
+						} else if (isdigit(c)) {
                             temp += c;
                         }
                     } else {
@@ -99,12 +109,20 @@ int main() {
                     }
                 }
 
-                if (valid && !temp.empty()) {
-                    int num = stoi(temp) % 26;
-                    if (num == 0) num = 26;
+				if (valid && !temp.empty()) {
+					try {
+						int num = stoi(temp);
 
-                    keyNumbers.push_back(num);
-                }
+						num = num % 26;
+						if (num == 0) num = 26;
+
+						keyNumbers.push_back(num);
+					} catch (const std::out_of_range& e) {
+						cout << "The number \"" << temp << "\" is too large. Please enter smaller numbers for the key." << endl;
+					
+						valid = false;
+					}
+				}
 
                 if (valid && keyNumbers.size() == (unsigned)blockSize) {
                     key.clear();
@@ -112,13 +130,13 @@ int main() {
                     for (int num : keyNumbers) key += to_string(num);
 
                     break;
-                } else {
+                } else if (valid) {
                     cout << "Key length must be equal to block size." << endl;
                 }
 
                 if (!valid) {
                     cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                //    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
             }
 
@@ -176,12 +194,23 @@ int main() {
                 for (char c : key) {
                     if (isdigit(c) || c == ' ') {
                         if (c == ' ' && !temp.empty()) {
-                            int num = stoi(temp) % 26;
-                            if (num == 0) num = 26;
+							try {
+								int num = stoi(temp);
 
-                            keyNumbers.push_back(num);
-                            temp.clear();
-                        } else if (isdigit(c)) {
+								num = num % 26;
+								if (num == 0) num = 26;
+
+								keyNumbers.push_back(num);
+							} catch (const std::out_of_range& e) {
+								cout << "The number \"" << temp << "\" is too large. Please enter smaller numbers for the key." << endl;
+								
+								valid = false;
+
+								break;
+							}
+							temp.clear();
+						}
+						else if (isdigit(c)) {
                             temp += c;
                         }
                     } else {
@@ -192,12 +221,20 @@ int main() {
                     }
                 }
 
-                if (valid && !temp.empty()) {
-                    int num = stoi(temp) % 26;
-					if (num == 0) num = 26;
+				if (valid && !temp.empty()) {
+					try {
+						int num = stoi(temp);
 
-                    keyNumbers.push_back(num);
-                }
+						num = num % 26;
+						if (num == 0) num = 26;
+
+						keyNumbers.push_back(num);
+					} catch (const std::out_of_range& e) {
+						cout << "The number \"" << temp << "\" is too large. Please enter smaller numbers for the key." << endl;
+						
+						valid = false;
+					}
+				}
 
                 if (valid && keyNumbers.size() == (unsigned)blockSize) {
                     key.clear();
@@ -205,13 +242,13 @@ int main() {
                     for (int num : keyNumbers) key += to_string(num);
 
                     break;
-                } else {
+                } else if (valid) {
                     cout << "Key length must be equal to block size." << endl;
                 }
 
                 if (!valid) {
                     cin.clear();
-                    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                //    cin.ignore(numeric_limits<streamsize>::max(), '\n');
                 }
             }
 
